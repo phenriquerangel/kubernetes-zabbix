@@ -1,0 +1,236 @@
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zabbix-server
+  labels:
+    app: zabbix
+    tier: server
+    environment: dev
+  namespace: zabbix
+spec:
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  selector:
+    matchLabels:
+      name: zabbix-server
+      app: zabbix
+  template:
+    metadata:
+      labels:
+        name: zabbix-server
+        app: zabbix
+    spec:
+      volumes:
+       - name: zabbix-snmptraps
+         emptyDir: {}
+       - name: mysql-tls-certs
+         secret:
+           secretName: zabbix-mysql-client-tls-certs
+      containers:
+        - name: zabbix-server
+          image: zabbix/zabbix-server-mysql:alpine-6.0-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 10051
+            protocol: TCP
+            name: zabbix-trapper
+          readinessProbe:
+            tcpSocket:
+              port: zabbix-trapper
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: zabbix-trapper
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          env:
+          - name: MYSQL_USER
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-user
+          - name: MYSQL_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-pass
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-root-pass
+          - name: MYSQL_DATABASE
+            value: "zabbix"
+          - name: ZBX_DBTLSCONNECT
+            value: "required"
+          - name: ZBX_DBTLSCAFILE
+            value: "/tmp/secrets/root-ca.pem"
+          - name: ZBX_DBTLSCERTFILE
+            value: "/tmp/secrets/client-cert.pem"
+          - name: ZBX_DBTLSKEYFILE
+            value: "/tmp/secrets/client-key.pem"
+          - name: ZBX_DBTLSCIPHER
+            value: ""
+          - name: ZBX_DBTLSCIPHER13
+            value: ""
+          - name: ZBX_HISTORYSTORAGEURL
+            value: ""
+          - name: ZBX_HISTORYSTORAGETYPES
+            value: ""
+          - name: ZBX_HISTORYSTORAGEDATEINDEX
+            value: "1"
+          - name: ZBX_STARTREPORTWRITERS
+            value: "3"
+          - name: ZBX_WEBSERVICEURL
+            value: "http://zabbix-web-service:10053/report"
+          - name: ZBX_DEBUGLEVEL
+            value: "3"
+          - name: ZBX_STARTPOLLERS
+            value: ""
+          - name: ZBX_STARTPREPROCESSORS
+            value: ""
+          - name: ZBX_STARTPOLLERSUNREACHABLE
+            value: ""
+          - name: ZBX_STARTTRAPPERS
+            value: ""
+          - name: ZBX_STARTPINGERS
+            value: ""
+          - name: ZBX_STARTDISCOVERERS
+            value: ""
+          - name: ZBX_STARTHTTPPOLLERS
+            value: ""
+          - name: ZBX_IPMIPOLLERS
+            value: ""
+          - name: ZBX_STARTTIMERS
+            value: ""
+          - name: ZBX_STARTESCALATORS
+            value: ""
+          - name: ZBX_STARTALERTERS
+            value: ""
+          - name: ZBX_JAVAGATEWAY_ENABLE
+            value: "true"
+          - name: ZBX_JAVAGATEWAY
+            value: "zabbix-java-gateway"
+          - name: ZBX_JAVAGATEWAYPORT
+            value: "10052"
+          - name: ZBX_STARTJAVAPOLLERS
+            value: "5"
+          - name: ZBX_STARTLLDPROCESSORS
+            value: ""
+          - name: ZBX_STATSALLOWEDIP
+            value: ""
+          - name: ZBX_STARTVMWARECOLLECTORS
+            value: ""
+          - name: ZBX_VMWAREFREQUENCY
+            value: ""
+          - name: ZBX_VMWAREPERFFREQUENCY
+            value: ""
+          - name: ZBX_VMWARECACHESIZE
+            value: ""
+          - name: ZBX_VMWARETIMEOUT
+            value: ""
+          - name: ZBX_ENABLE_SNMP_TRAPS
+            value: "true"
+          - name: ZBX_HOUSEKEEPINGFREQUENCY
+            value: ""
+          - name: ZBX_MAXHOUSEKEEPERDELETE
+            value: ""
+          - name: ZBX_CACHESIZE
+            value: ""
+          - name: ZBX_CACHEUPDATEFREQUENCY
+            value: ""
+          - name: ZBX_STARTDBSYNCERS
+            value: ""
+          - name: ZBX_HISTORYCACHESIZE
+            value: ""
+          - name: ZBX_HISTORYINDEXCACHESIZE
+            value: ""
+          - name: ZBX_TRENDCACHESIZE
+            value: ""
+          - name: ZBX_VALUECACHESIZE
+            value: ""
+          - name: ZBX_TIMEOUT
+            value: "4"
+          - name: ZBX_TRAPPERIMEOUT
+            value: ""
+          - name: ZBX_UNREACHABLEPERIOD
+            value: ""
+          - name: ZBX_UNAVAILABLEDELAY
+            value: ""
+          - name: ZBX_UNREACHABLEDELAY
+            value: ""
+          - name: ZBX_LOGSLOWQUERIES
+            value: "3000"
+          - name: ZBX_STARTPROXYPOLLERS
+            value: ""
+          - name: ZBX_PROXYCONFIGFREQUENCY
+            value: ""
+          - name: ZBX_PROXYDATAFREQUENCY
+            value: ""
+          - name: ZBX_EXPORTFILESIZE
+            value: ""
+          - name: ZBX_LOADMODULE
+            value: ""
+          - name: ZBX_TLSCAFILE
+            value: ""
+          - name: ZBX_TLSCRLFILE
+            value: ""
+          - name: ZBX_TLSCERTFILE
+            value: ""
+          - name: ZBX_TLSKEYFILE
+            value: ""
+          - name: ZBX_TLSCIPHERALL
+            value: ""
+          - name: ZBX_TLSCIPHERALL13
+            value: ""
+          - name: ZBX_TLSCIPHERCERT
+            value: ""
+          - name: ZBX_TLSCIPHERCERT13
+            value: ""
+          - name: ZBX_TLSCIPHERPSK
+            value: ""
+          - name: ZBX_TLSCIPHERPSK13
+            value: ""
+          - name: DEBUG_MODE
+            value: "false"
+          volumeMounts:
+          - name: zabbix-snmptraps
+            mountPath: "/var/lib/zabbix/snmptraps"
+            readOnly: true
+          - mountPath: "/tmp/secrets"
+            name: mysql-tls-certs
+            readOnly: true
+          startupProbe:
+            tcpSocket:
+              port: 10051
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            tcpSocket:
+              port: 10051
+            timeoutSeconds: 3
+            failureThreshold: 3
+            periodSeconds: 10
+          securityContext:
+            capabilities: {}
+            privileged: false
+        - name: zabbix-snmptraps
+          image: zabbix/zabbix-snmptraps:alpine-6.0-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 1162
+            protocol: UDP
+            name: snmp-trap
+          volumeMounts:
+          - name: zabbix-snmptraps
+            mountPath: /var/lib/zabbix/snmptraps/
+            readOnly: false
+          securityContext:
+            capabilities: {}
+            privileged: false

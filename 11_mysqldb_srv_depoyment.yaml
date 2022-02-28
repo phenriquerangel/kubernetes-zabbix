@@ -1,0 +1,88 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-server
+  labels:
+    app: zabbix
+    tier: mysql-server
+  namespace: zabbix
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      name: mysql-server
+      app: zabbix
+      tier: mysql-server
+  template:
+    metadata:
+      labels:
+        name: mysql-server
+        app: zabbix
+        tier: mysql-server
+    spec:
+      volumes:
+       - name: zabbix-mysql-data
+         persistentVolumeClaim:
+          claimName: zabbix-mysql-data-claim
+       - name: mysql-tls-certs
+         secret:
+          secretName: zabbix-mysql-server-tls-certs
+      containers:
+        - name: zabbix-db
+          image: mysql:8.0
+          args:
+           - mysqld
+           - --character-set-server=utf8
+           - --collation-server=utf8_bin
+           - --default-authentication-plugin=mysql_native_password
+           - --require-secure-transport
+           - --ssl-ca=/tmp/secrets/root-ca.pem
+           - --ssl-cert=/tmp/secrets/server-cert.pem
+           - --ssl-key=/tmp/secrets/server-key.pem
+           - --tls-version=TLSv1.2,TLSv1.3
+          ports:
+          - containerPort: 3306
+            name: mysql
+          livenessProbe:
+            exec:
+              command: ["bash", "-c", "mysqladmin -u root -p$MYSQL_ROOT_PASSWORD ping"]
+            timeoutSeconds: 3
+            failureThreshold: 3
+            periodSeconds: 10
+          startupProbe:
+            exec:
+              command: ["bash", "-c", "mysql -u root -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1'"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 30
+          env:
+          - name: MYSQL_USER
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-user
+          - name: MYSQL_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-pass
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-root-pass
+          - name: MYSQL_DATABASE
+            value: "zabbix"
+          volumeMounts:
+           - mountPath: "/var/lib/mysql"
+             name: zabbix-mysql-data
+             readOnly: false
+           - mountPath: "/tmp/secrets"
+             name: mysql-tls-certs
+             readOnly: true
+          securityContext:
+            capabilities: {}
+            privileged: false

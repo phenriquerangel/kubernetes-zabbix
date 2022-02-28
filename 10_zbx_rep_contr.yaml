@@ -1,0 +1,121 @@
+---
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: zabbix-web
+  labels:
+    app: zabbix
+    tier: zabbix-web
+  namespace: zabbix
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: zabbix-web
+        app: zabbix
+    spec:
+      volumes:
+       - name: mysql-tls-certs
+         secret:
+          secretName: zabbix-mysql-client-tls-certs
+      containers:
+        - name: zabbix-web
+          image: zabbix/zabbix-web-nginx-mysql:alpine-6.0-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 8080
+            name: web-http
+          - containerPort: 8443
+            name: web-https
+          resources:
+           limits:
+            cpu: 200m
+            memory: 400Mi
+           requests:
+            cpu: 200m
+            memory: 400Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: web-http
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: web-http
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+          env:
+          - name: ZBX_SERVER_NAME
+            value: "Zabbix Kubernetes"
+          - name: PHP_TZ
+            value: "Europe/Riga"
+          - name: DB_SERVER_HOST
+            value: "mysql-server"
+          - name: MYSQL_USER
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-user
+          - name: MYSQL_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-zbx-pass
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+             secretKeyRef:
+              name: db-secret
+              key: db-root-pass
+          - name: MYSQL_DATABASE
+            value: "zabbix"
+          - name: ZBX_DB_ENCRYPTION
+            value: "true"
+          - name: ZBX_DB_CA_FILE
+            value: "/tmp/secrets/root-ca.pem"
+          - name: ZBX_DB_CERT_FILE
+            value: "/tmp/secrets/client-cert.pem"
+          - name: ZBX_DB_KEY_FILE
+            value: "/tmp/secrets/client-key.pem"
+          - name: ZBX_DB_VERIFY_HOST
+            value: "false"
+          - name: ZBX_DB_CIPHER_LIST
+            value: ""
+#          - name: ZBX_HISTORYSTORAGEURL
+#            value: ""
+#          - name: ZBX_HISTORYSTORAGETYPES
+#            value: ""
+#          - name: ZBX_MAXEXECUTIONTIME
+#            value: ""
+#          - name: ZBX_MEMORYLIMIT
+#            value: ""
+#          - name: ZBX_POSTMAXSIZE
+#            value: ""
+#          - name: ZBX_UPLOADMAXFILESIZE
+#            value: ""
+#          - name: ZBX_MAXINPUTTIME
+#            value: ""
+#          - name: ZBX_SESSION_NAME
+#            value: ""
+#          - name: DB_DOUBLE_IEEE754
+#            value: "true"
+          - name: ZBX_SSO_SETTINGS
+            value: "[]"
+          - name: ENABLE_WEB_ACCESS_LOG
+            value: "true"
+          - name: DEBUG_MODE
+            value: "false"
+          volumeMounts:
+          - mountPath: "/tmp/secrets"
+            name: mysql-tls-certs
+            readOnly: true

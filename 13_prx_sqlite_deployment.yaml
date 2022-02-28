@@ -1,0 +1,163 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zabbix-proxy-sqlite3
+  labels:
+    app: zabbix
+    tier: proxy
+  namespace: zabbix
+spec:
+  strategy:
+    type: Recreate
+    rollingUpdate: null
+  selector:
+    matchLabels:
+      name: zabbix-proxy-sqlite3
+      app: zabbix
+  template:
+    metadata:
+      labels:
+        name: zabbix-proxy-sqlite3
+        app: zabbix
+    spec:
+      volumes:
+        - name: proxy-sqlite-data
+          emptyDir: {}
+      containers:
+        - name: zabbix-proxy-sqlite3
+          image: zabbix/zabbix-proxy-sqlite3:alpine-6.0-latest
+          imagePullPolicy: IfNotPresent
+          ports:
+          - containerPort: 10051
+            protocol: TCP
+            name: zabbix-trapper
+          startupProbe:
+            tcpSocket:
+              port: 10051
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 40
+          livenessProbe:
+            tcpSocket:
+              port: 10051
+            timeoutSeconds: 3
+            failureThreshold: 3
+            periodSeconds: 10
+          env:
+          - name: ZBX_PROXYMODE
+            value: "1"
+          - name: ZBX_SERVER_HOST
+            value: ""
+          - name: ZBX_SERVER_PORT
+            value: ""
+          - name: ZBX_HOSTNAME
+            value: "zabbix-proxy-sqlite"
+          - name: ZBX_ENABLEREMOTECOMMANDS
+            value: "0"
+          - name: ZBX_LOGREMOTECOMMANDS
+            value: "1"
+          - name: ZBX_HOSTNAMEITEM
+            value: ""
+          - name: ZBX_DEBUGLEVEL
+            value: "3"
+          - name: ZBX_PROXYLOCALBUFFER
+            value: ""
+          - name: ZBX_PROXYOFFLINEBUFFER
+            value: ""
+          - name: ZBX_STARTPOLLERS
+            value: ""
+          - name: ZBX_IPMIPOLLERS
+            value: ""
+          - name: ZBX_STARTPOLLERSUNREACHABLE
+            value: ""
+          - name: ZBX_STARTTRAPPERS
+            value: ""
+          - name: ZBX_STARTPINGERS
+            value: ""
+          - name: ZBX_STARTDISCOVERERS
+            value: ""
+          - name: ZBX_STARTHTTPPOLLERS
+            value: ""
+          - name: ZBX_JAVAGATEWAY_ENABLE
+            value: "true"
+          - name: ZBX_JAVAGATEWAY
+            value: "zabbix-java-gateway"
+          - name: ZBX_JAVAGATEWAYPORT
+            value: "10052"
+          - name: ZBX_STARTJAVAPOLLERS
+            value: "5"
+          - name: ZBX_STARTVMWARECOLLECTORS
+            value: ""
+          - name: ZBX_VMWAREFREQUENCY
+            value: ""
+          - name: ZBX_VMWAREPERFFREQUENCY
+            value: ""
+          - name: ZBX_VMWARECACHESIZE
+            value: ""
+          - name: ZBX_VMWARETIMEOUT
+            value: ""
+          - name: ZBX_HOUSEKEEPINGFREQUENCY
+            value: ""
+          - name: ZBX_CACHESIZE
+            value: ""
+          - name: ZBX_STARTDBSYNCERS
+            value: ""
+          - name: ZBX_HISTORYCACHESIZE
+            value: ""
+          - name: ZBX_HISTORYINDEXCACHESIZE
+            value: ""
+          - name: ZBX_TIMEOUT
+            value: "4"
+          - name: ZBX_TRAPPERIMEOUT
+            value: ""
+          - name: ZBX_UNREACHABLEPERIOD
+            value: ""
+          - name: ZBX_UNAVAILABLEDELAY
+            value: ""
+          - name: ZBX_UNREACHABLEDELAY
+            value: ""
+          - name: ZBX_LOGSLOWQUERIES
+          - name: ZBX_LOADMODULE
+            value: ""
+          - name: ZBX_TLSCONNECT
+            value: ""
+          - name: ZBX_TLSACCEPT
+            value: ""
+          - name: ZBX_TLSCAFILE
+            value: ""
+          - name: ZBX_TLSCRLFILE
+            value: ""
+          - name: ZBX_TLSSERVERCERTISSUER
+            value: ""
+          - name: ZBX_TLSSERVERCERTSUBJECT
+            value: ""
+          - name: ZBX_TLSCERTFILE
+            value: ""
+          - name: ZBX_TLSKEYFILE
+            value: ""
+          - name: ZBX_TLSPSKIDENTITY
+            value: ""
+          - name: ZBX_TLSPSKFILE
+            value: ""
+          - name: ZBX_TLSCIPHERALL
+            value: ""
+          - name: ZBX_TLSCIPHERALL13
+            value: ""
+          - name: ZBX_TLSCIPHERCERT
+            value: ""
+          - name: ZBX_TLSCIPHERCERT13
+            value: ""
+          - name: ZBX_TLSCIPHERPSK
+            value: ""
+          - name: ZBX_TLSCIPHERPSK13
+            value: ""
+          - name: DEBUG_MODE
+            value: "false"
+          volumeMounts:
+          - mountPath: "/var/lib/zabbix/db_data"
+            name: proxy-sqlite-data
+          securityContext:
+            capabilities: {}
+            privileged: false
