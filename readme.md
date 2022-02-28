@@ -5,7 +5,7 @@ Cluster Kubernetes com 2 servidores
 
 Kubernetes utilizado para o estudo é o v1.21.4 (Neste momento, o ambiente é o ambiente utilizado para a prova do CKA)
 
-Primerias configurações no cluster
+Primerias configurações no cluster :
 
 - executar namespace.yaml para criar o namespace zabbix
     ```
@@ -17,11 +17,11 @@ Primerias configurações no cluster
     kubectl apply -f rbac_zabbix.yaml
     ```
 
-- executar secret-data.yaml para criar arquivos de certificado e senhas 
+- executar secret-data.yaml para criar arquivos de certificado e senhas
     ```
     kubectl apply -f secret-data.yaml
     ```
-OBS: arquivos padrões da zabbix.com para estudos
+OBS: chaves padrões da zabbix.com para estudos
 #### Zabbix - Database - MySQL :
 
 - Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente. que irá se alocar no /mnt/dados
@@ -101,3 +101,7 @@ Para acesso ao ambiente, é necesário validar com o comando abaixo, qual porta 
     ```
     kubectl get svc -n zabbix
     ```
+
+OBS: 
+-   O ambiente não deve ser colocado em produção, é apenas para aprendizado em laboratório.
+-   Todos arquivos setados nesse repositório foram baseados na documentação oficial do Zabbix.
