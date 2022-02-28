@@ -1,5 +1,4 @@
-##  Requisitos e tecnologias utilizadas
-
+### 💻 Pré-requisitos
 Cluster Kubernetes com 2 servidores
 - Master - 2 Cpu , 4 Gb , 50Gb de disco e SO Ubuntu 20.04
 - Worker - 2 Cpu , 4 Gb , 50Gb de disco e SO Ubuntu 20.04
@@ -18,8 +17,7 @@ Primerias configurações no cluster
     kubectl apply -f rbac_zabbix.yaml
     ```
 
-
-Instalação Database :
+### Zabbix - Database - MySQL :
 
 - Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente. que irá se alocar no /mnt/dados
 	```
@@ -43,7 +41,7 @@ Instalação Database :
     kubectl logs -f container_name -n zabbix
     ```
 
-Zabbix - Server 
+### Zabbix - Server 
 
 - executar arquivo zbx-srv-svc.yaml para criação do serviço
 	```
@@ -55,7 +53,7 @@ Zabbix - Server
     kubectl apply -f server/zbx-srv-deployment.yaml
     ```
 
-Zabbix - Web
+### Zabbix - Web
 
 - executar arquivo zbx-web-svc.yaml para criação do serviços (HTTP e HTTPS) e também serviço web da porta 10053 para uso interno do zabbix 
 	```
@@ -79,7 +77,7 @@ Zabbix - Web
 
 OBS: Neste passo, o svc foi alterado para Type NodePort para testes locais. a informação original seria ClusterIP.
 
-Zabbix - Agent 
+### Zabbix - Agent 
 
 - Executar arquivo zbx-agent-svc.yaml para criação do serviço e expor a porta 10050
 	```
