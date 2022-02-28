@@ -59,7 +59,7 @@ spec:
           - name: ZBX_SERVER_NAME
             value: "Zabbix Kubernetes"
           - name: PHP_TZ
-            value: "Europe/Riga"
+            value: "America/Sao_Paulo"
           - name: DB_SERVER_HOST
             value: "mysql-server"
           - name: MYSQL_USER
