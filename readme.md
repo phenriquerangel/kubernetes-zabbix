@@ -18,9 +18,9 @@ Primerias configurações no cluster
 Instalação Database :
 
 - Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente. que irá se alocar no /mnt/dados
-	```kubectl apply -f database-mysql/mysql-db-volumes.yaml```
-	```kubectl get pv -n zabbix```
-	```kubectl get pvc -n zabbix```
+	```-    kubectl apply -f database-mysql/mysql-db-volumes.yaml```
+	```-    kubectl get pv -n zabbix```
+	```-    kubectl get pvc -n zabbix```
 
 - criação do serviço de comunicação mysql-db-svc.yaml 
 	```kubectl apply -f database-mysql/mysql-db-svc.yaml```
