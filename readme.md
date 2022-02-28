@@ -17,14 +17,14 @@ Primerias configurações no cluster :
     kubectl apply -f rbac_zabbix.yaml
     ```
 
-- executar secret-data.yaml para criar arquivos de certificado e senhas
+- executar secret-data.yaml para criar secret contendo certificado e senhas
     ```
     kubectl apply -f secret-data.yaml
     ```
 OBS: chaves padrões da zabbix.com para estudos
 #### Zabbix - Database - MySQL :
 
-- Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente. que irá se alocar no /mnt/dados
+- Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente, que irá se alocar no /mnt/dados do cluster
 	```
     kubectl apply -f database-mysql/mysql-db-volumes.yaml
 	kubectl get pv -n zabbix
@@ -36,7 +36,7 @@ OBS: chaves padrões da zabbix.com para estudos
     kubectl apply -f database-mysql/mysql-db-svc.yaml
     ```
 
-- Criação do banco em si, validando nos logs a criação do banco de dados, arquivo mysql-db-deployment.yaml 
+- Criação do banco em si, validando nos logs a criação do banco de dados, arquivo mysql-db-deployment.yaml.
 	```
     kubectl apply -f database-mysql/mysql-db-deployment.yaml
     ```
