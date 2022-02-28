@@ -1,42 +1,43 @@
 #### 💻 Pré-requisitos
-Cluster Kubernetes com 2 servidores
+Cluster Kubernetes with 2 servers
 - Master - 2 Cpu , 4 Gb , 50Gb de disco e SO Ubuntu 20.04
 - Worker - 2 Cpu , 4 Gb , 50Gb de disco e SO Ubuntu 20.04
 
-Kubernetes utilizado para o estudo é o v1.21.4 (Neste momento, o ambiente é o ambiente utilizado para a prova do CKA)
+Kubernetes version is v1.21.4 (In this moment, this is environment to CKA certified course)
 
-Primerias configurações no cluster :
+First cluster configurations :
 
-- executar namespace.yaml para criar o namespace zabbix
+- execute file namespace.yaml for create namespace zabbix on cluster
     ```
     kubectl apply -f namespace.yaml
     ```
 
-- executar rbac_zabbix.yaml  para dar o permissionamento necessário ,para o Agent do zabbix. ( Role, Rolebinding e ServiceAccount)
+- execute file rbac_zabbix.yaml for grant permissions on cluster for agent zabbix (Role, Rolebinding e ServiceAccount)
     ```
     kubectl apply -f rbac_zabbix.yaml
     ```
 
-- executar secret-data.yaml para criar secret contendo certificado e senhas
+- execute file secret-data.yaml for create a secret with certifieds and passwords default 
     ```
     kubectl apply -f secret-data.yaml
     ```
-OBS: chaves padrões da zabbix.com para estudos
+OBS: default keys from zabbix.com , just for learning enviroment
+
 #### Zabbix - Database - MySQL :
 
-- Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente, que irá se alocar no /mnt/dados do cluster
+- Execute file mysql-db-volumes.yaml for create a persistent volume, wich alocated on /mnt/dados on machine cluster( worker or node)
 	```
     kubectl apply -f database-mysql/mysql-db-volumes.yaml
 	kubectl get pv -n zabbix
 	kubectl get pvc -n zabbix
     ```
 
-- criação do serviço de comunicação mysql-db-svc.yaml 
+- execute file mysql-db-svc.yaml for create service communication from db-mysql
 	```
     kubectl apply -f database-mysql/mysql-db-svc.yaml
     ```
 
-- Criação do banco em si, validando nos logs a criação do banco de dados, arquivo mysql-db-deployment.yaml.
+- execute file mysql-db-deployment.yaml, for create the database. Will needed check logs for that's creation it's ok. 
 	```
     kubectl apply -f database-mysql/mysql-db-deployment.yaml
     ```
@@ -48,60 +49,62 @@ OBS: chaves padrões da zabbix.com para estudos
 
 #### Zabbix - Server 
 
-- executar arquivo zbx-srv-svc.yaml para criação do serviço
+- execute file zbx-srv-svc.yaml for create zabbix server service.
 	```
     kubectl apply -f server/zbx-srv-svc.yaml
     ```
 
-- executar arquivo zbx-srv-deployment.yaml para criação do container do server, o mesmo também irá subir o container do Zabbix Trapper
+- execute file zbx-srv-deployment.yaml for create a zabbix server container. this step, create automaticly a zabbix trapper container too
 	```
     kubectl apply -f server/zbx-srv-deployment.yaml
     ```
 
 #### Zabbix - Web
 
-- executar arquivo zbx-web-svc.yaml para criação do serviços (HTTP e HTTPS) e também serviço web da porta 10053 para uso interno do zabbix 
+- executer file zbx-web-svc.yaml for create zabbix web services from HTTP and HTTPS protocols and port 10053 for internal zabbix server 
 	```
     kubectl apply -f web/zbx-web-svc.yaml
     ```
 	
-- executar arquivo zbx-web-deployment.yaml para criação do template do container Zabbix Web
+- execute file zbx-web-deployment.yaml for create container template from Zabbix Web
 	```
     kubectl apply -f web/zbx-web-deployment.yaml
     ```
 	
-- executar arquivo zbx-web-rep-contr.yaml para criação do Replication Controller 
+- execute file zbx-web-rep-contr.yaml for create Replication Controller 
 	```
     kubectl apply -f web/zbx-web-rep-contr.yaml
     ```
 	
-- executar arquivo zbx-web-hpa.yaml ára criação do Horizontal Pod Autoscale, baseado no Replication Controller , o que fará os Pods do Zabbix Web iniciar
+- execute file  zbx-web-hpa.yaml for create a Horizontal Pod AutoScale based on Replication Controller, with start a pods from container Zabbix Web
 	```
     kubectl apply -f web/zbx-web-hpa.yaml
     ```
 
-OBS: Neste passo, o svc foi alterado para Type NodePort para testes locais. a informação original seria ClusterIP.
+PS: 
+-   For this step, svc type original is ClusterIP, does changed from NodePort for realized to facilitate access.
 
 #### Zabbix - Agent 
 
-- Executar arquivo zbx-agent-svc.yaml para criação do serviço e expor a porta 10050
+- execute file zbx-agent-svc.yaml for create service to expose web port
 	```
     kubectl apply -f agent/zbx-web-hpa.yaml
     ```
 
-- Executar arquivo zbx-agent-deamonset.yaml para criação do DeamonSet do zabbix Agent e subida dos Pods do serviço
+- execute file zbx-agent-deamonset.yaml for create a DeamonSet from Zabbix Agent 
 
 	```
     kubectl apply -f agent/zbx-agent-deamonset.yaml
     ```
 
-Após isso, o ambiente básico e PARA ESTUDOS estara no ar.
+After this, the basic environment for learning its online. 
 
-Para acesso ao ambiente, é necesário validar com o comando abaixo, qual porta será disposta no node para acesso
+For acess this environment, do you need check port exposed from kubernets.
     ```
     kubectl get svc -n zabbix
     ```
 
-OBS: 
--   O ambiente não deve ser colocado em produção, é apenas para aprendizado em laboratório.
--   Todos arquivos setados nesse repositório foram baseados na documentação oficial do Zabbix.
+PS:
+- This environment should not be put into production, it's just for LAB LEARNING.
+
+- All file described on this repos, can be found on Zabbix Official documentation
