@@ -17,6 +17,11 @@ Primerias configurações no cluster
     kubectl apply -f rbac_zabbix.yaml
     ```
 
+- executar secret-data.yaml para criar arquivos de certificado e senhas 
+    ```
+    kubectl apply -f secret-data.yaml
+    ```
+OBS: arquivos padrões da zabbix.com para estudos
 #### Zabbix - Database - MySQL :
 
 - Primeiro vamos executar o arquivo mysql-db-volumes.yaml para criação do volume persistente. que irá se alocar no /mnt/dados
@@ -89,7 +94,6 @@ OBS: Neste passo, o svc foi alterado para Type NodePort para testes locais. a in
 	```
     kubectl apply -f agent/zbx-agent-deamonset.yaml
     ```
-
 
 Após isso, o ambiente básico e PARA ESTUDOS estara no ar.
 
